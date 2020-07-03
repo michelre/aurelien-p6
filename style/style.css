@@ -11,3 +11,13 @@ table td {
 td.obstacle {
     background: rgba(0, 0, 0, .5);
 }
+
+td.weapon::after {
+    content: 'A';
+    text-align: center;
+}
+
+td.player::after {
+    content: 'J';
+    text-align: center;
+}
