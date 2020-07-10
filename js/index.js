@@ -16,10 +16,10 @@ function getRandomNumber(min, max) {
 function cellHasElement(cellX, cellY, elements) {
     for (let i = 0; i < elements.length; i++) {
         if (elements[i].x === cellX && elements[i].y === cellY) {
-            return true
+            return elements[i];
         }
     }
-    return false;
+    return null;
 }
 
 function createGrid(nbRows, nbCols, obstacles, weapons, players) {
@@ -30,12 +30,15 @@ function createGrid(nbRows, nbCols, obstacles, weapons, players) {
         for (let x = 0; x < nbCols; x++) {
             if (cellHasElement(x, y, obstacles)) {
                 tbody += '<td class="obstacle" data-x="' + x + '" data-y="' + y + '"></td>'
-            }
-            else if (cellHasElement(x, y, weapons)) {
+            } else if (cellHasElement(x, y, weapons)) {
                 tbody += '<td class="weapon" data-x="' + x + '" data-y="' + y + '"></td>'
-            }
-            else if (cellHasElement(x, y, players)) {
+            } else if (cellHasElement(x, y, players)) {
+                const player = cellHasElement(x, y, players)
+                if (player.active) {
+                    tbody += '<td class="player active" data-x="' + x + '" data-y="' + y + '"></td>'
+                } else {
                     tbody += '<td class="player" data-x="' + x + '" data-y="' + y + '"></td>'
+                }
             } else {
                 tbody += '<td data-x="' + x + '" data-y="' + y + '"></td>'
             }
@@ -91,7 +94,57 @@ function createElements(nbElements, coordinates = [], excludeCoordinates = []) {
     return createElements(nbElements, coordinates, excludeCoordinates)
 }
 
-const obstacles = createElements(5);
+function playerMove(players, obstacles, totalRows, totalCols) {
+    const moveCoordinates = [];
+    // Récupérer les coordonnées du joueur actif
+    let playerActive = null;
+    if (players[0].active) {
+        playerActive = players[0];
+    } else {
+        playerActive = players[1]
+    }
+
+    // Déterminer si possibilité de déplacement en haut
+    let obstacleFound = false;
+    for(let y = playerActive.y - 1; y >= playerActive.y - 3; y--){
+        const cell = { x: playerActive.x, y }
+        //Tester si la cellule a un obstacle et qu'aucun obstacle n'a été trouvé sur le chemin
+        if(cellHasElement(cell.x, cell.y, obstacles) === null && obstacleFound === false){
+            moveCoordinates.push(cell)
+        } else {
+            obstacleFound = true;
+        }
+    }
+
+    // Déterminer si possibilité de déplacement en bas
+
+    // Déterminer si possibilité de déplacement à gauche
+
+    // Déterminer si possibilité de déplacement à droite
+
+    return moveCoordinates;
+}
+
+/**
+ * Etape 1 - Dessin de la grille et positionnement des éléménts
+ */
+const obstacles = createElements(20);
 const weapons = createElements(4, [], obstacles);
-const players = createElements(2, [], weapons.concat(obstacles));
+const playersCoordinates = createElements(2, [], weapons.concat(obstacles));
+/**
+ * Créer des objets de type Player qui contiennent les coordonnées et la propriété active pour gérer le tour par tour
+ */
+const players = [];
+for (let i = 0; i < playersCoordinates.length; i++) {
+    const player = new Player(playersCoordinates[i].x, playersCoordinates[i].y, false)
+    players.push(player)
+}
+players[0].active = true;
 createGrid(totalRows, totalCols, obstacles, weapons, players);
+
+/**
+ * Etape 2 - Déplacement des joueurs
+ */
+const moveCoordinates = playerMove(players, obstacles)
+console.log(moveCoordinates)
+

@@ -21,3 +21,7 @@ td.player::after {
     content: 'J';
     text-align: center;
 }
+
+td.player.active {
+    background: red;
+}
