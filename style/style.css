@@ -25,3 +25,7 @@ td.player::after {
 td.player.active {
     background: red;
 }
+
+td.movable {
+    background: green;
+}

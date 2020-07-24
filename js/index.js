@@ -22,7 +22,7 @@ function cellHasElement(cellX, cellY, elements) {
     return null;
 }
 
-function createGrid(nbRows, nbCols, obstacles, weapons, players) {
+function createGrid(nbRows, nbCols, obstacles, weapons, players, moveCoordinates) {
     const game = document.querySelector('#game')
     let tbody = ''
     for (let y = 0; y < nbRows; y++) {
@@ -47,6 +47,16 @@ function createGrid(nbRows, nbCols, obstacles, weapons, players) {
     }
 
     game.innerHTML = '<table><tbody>' + tbody + '</tbody></table>';
+
+    for (let i = 0; i < moveCoordinates.length; i++) {
+        const td = document.querySelector('td[data-x="' + moveCoordinates[i].x + '"][data-y="' + moveCoordinates[i].y + '"]')
+        if (td) {
+            td.classList.add('movable')
+            td.addEventListener('click', function(e){
+                moveActivePlayer(e.target.dataset.x, e.target.dataset.y)
+            })
+        }
+    }
 }
 
 /**
@@ -106,10 +116,10 @@ function playerMove(players, obstacles, totalRows, totalCols) {
 
     // Déterminer si possibilité de déplacement en haut
     let obstacleFound = false;
-    for(let y = playerActive.y - 1; y >= playerActive.y - 3; y--){
-        const cell = { x: playerActive.x, y }
+    for (let y = playerActive.y - 1; y >= playerActive.y - 3; y--) {
+        const cell = {x: playerActive.x, y}
         //Tester si la cellule a un obstacle et qu'aucun obstacle n'a été trouvé sur le chemin
-        if(cellHasElement(cell.x, cell.y, obstacles) === null && obstacleFound === false){
+        if (cellHasElement(cell.x, cell.y, obstacles) === null && obstacleFound === false) {
             moveCoordinates.push(cell)
         } else {
             obstacleFound = true;
@@ -117,10 +127,40 @@ function playerMove(players, obstacles, totalRows, totalCols) {
     }
 
     // Déterminer si possibilité de déplacement en bas
+    obstacleFound = false;
+    for (let y = playerActive.y + 1; y <= playerActive.y + 3; y++) {
+        const cell = {x: playerActive.x, y}
+        //Tester si la cellule a un obstacle et qu'aucun obstacle n'a été trouvé sur le chemin
+        if (cellHasElement(cell.x, cell.y, obstacles) === null && obstacleFound === false) {
+            moveCoordinates.push(cell)
+        } else {
+            obstacleFound = true;
+        }
+    }
 
     // Déterminer si possibilité de déplacement à gauche
+    obstacleFound = false;
+    for (let x = playerActive.x - 1; x >= playerActive.x - 3; x--) {
+        const cell = {x, y: playerActive.y}
+        //Tester si la cellule a un obstacle et qu'aucun obstacle n'a été trouvé sur le chemin
+        if (cellHasElement(cell.x, cell.y, obstacles) === null && obstacleFound === false) {
+            moveCoordinates.push(cell)
+        } else {
+            obstacleFound = true;
+        }
+    }
 
     // Déterminer si possibilité de déplacement à droite
+    obstacleFound = false;
+    for (let x = playerActive.x + 1; x <= playerActive.x + 3; x++) {
+        const cell = {x, y: playerActive.y}
+        //Tester si la cellule a un obstacle et qu'aucun obstacle n'a été trouvé sur le chemin
+        if (cellHasElement(cell.x, cell.y, obstacles) === null && obstacleFound === false) {
+            moveCoordinates.push(cell)
+        } else {
+            obstacleFound = true;
+        }
+    }
 
     return moveCoordinates;
 }
@@ -140,11 +180,35 @@ for (let i = 0; i < playersCoordinates.length; i++) {
     players.push(player)
 }
 players[0].active = true;
-createGrid(totalRows, totalCols, obstacles, weapons, players);
+const moveCoordinates = playerMove(players, obstacles)
+createGrid(totalRows, totalCols, obstacles, weapons, players, moveCoordinates);
 
 /**
  * Etape 2 - Déplacement des joueurs
  */
-const moveCoordinates = playerMove(players, obstacles)
-console.log(moveCoordinates)
+function moveActivePlayer(x, y){
+    for(let i = 0; i < players.length; i++){
+        // Mise à jour des nouvelles coordonnées du player actif et changement de joueur
+        if(players[i].active){
+            players[i].x = parseInt(x)
+            players[i].y = parseInt(y)
+            players[i].active = false
+        } else {
+            players[i].active = true
+        }
+    }
+
+    // Puisque c'est un nouveau joueur, on détermine les coordonnées de déplacement possible
+    const moveCoordinates = playerMove(players, obstacles)
+
+    // Redessiner la grille
+    createGrid(totalRows, totalCols, obstacles, weapons, players, moveCoordinates);
+}
+
+// Prise d'une nouvelle arme
+
+/**
+ * Etape 3 - Combat
+ */
+
 
